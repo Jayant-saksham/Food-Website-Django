@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
 # Create your models here.
+
+
 class UserManager(BaseUserManager):
 
     """
@@ -20,15 +22,16 @@ class UserManager(BaseUserManager):
         To create this class I used: https://github.com/django/django/blob/main/django/contrib/auth/models.py#L136 
 
     """
+
     def _create_user(self, username, email, password, **extra_fields):
         if not username:
             raise ValueError("The given username must be set")
-            
+
         if not email:
             raise ValueError("The given email must be set")
-        
+
         email = self.normalize_email(email)
-       
+
         user = self.model(username=username, email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -45,12 +48,11 @@ class UserManager(BaseUserManager):
 
         if extra_fields.get("is_staff") is not True:
             raise ValueError("Superuser must have is_staff=True.")
-        
+
         if extra_fields.get("is_superuser") is not True:
             raise ValueError("Superuser must have is_superuser=True.")
 
         return self._create_user(username, email, password, **extra_fields)
- 
 
 
 class User(AbstractBaseUser):
@@ -81,32 +83,32 @@ class User(AbstractBaseUser):
     )
 
     first_name = models.CharField(max_length=150, blank=True, null=True)
-    last_name = models.CharField(max_length=150, blank=True, null=True) 
-    username = models.CharField(max_length=50, blank = True, null = True)
-    email = models.EmailField(max_length = 50, unique=True, null=True, blank = True)
+    last_name = models.CharField(max_length=150, blank=True, null=True)
+    username = models.CharField(max_length=50, blank=True, null=True)
+    email = models.EmailField(
+        max_length=50, unique=True, null=True, blank=True)
     phone_number = models.CharField(max_length=12, blank=True)
-    role = models.PositiveSmallIntegerField(choices=ROLE_CHOICE, blank=True, null=True)
+    role = models.PositiveSmallIntegerField(
+        choices=ROLE_CHOICE, blank=True, null=True)
 
-
-    #BooleanField
+    # BooleanField
     is_staff = models.BooleanField(
         default=False,
-        help_text = ("Designates whether the user can log into this admin site."),
+        help_text=("Designates whether the user can log into this admin site."),
     )
     is_active = models.BooleanField(
         default=True,
-        help_text = ("Designates whether this user should be treated as active. "),
+        help_text=("Designates whether this user should be treated as active. "),
     )
-    is_superuser =  models.BooleanField(
+    is_superuser = models.BooleanField(
         default=False,
-        help_text = ("Designates whether this user should be treated as admin. "),
+        help_text=("Designates whether this user should be treated as admin. "),
     )
 
-    #DateField 
-    created = models.DateTimeField(auto_now_add = True)
-    updated = models.DateTimeField(auto_now = True) 
-    last_login = models.DateTimeField(auto_now = True)
-
+    # DateField
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+    last_login = models.DateTimeField(auto_now=True)
 
     EMAIL_FIELD = "email"
     USERNAME_FIELD = 'email'
@@ -123,16 +125,28 @@ class User(AbstractBaseUser):
     def has_module_perms(self, app_label):
         return True
 
-
     class Meta:
         verbose_name = "User"
         verbose_name_plural = "Users"
 
 
+class UserProfile(models.Model):
 
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, blank=True, null=True)
+    profile_picture = models.ImageField(
+        upload_to='users/profile_pictures', blank=True, null=True)
+    cover_photo = models.ImageField(
+        upload_to='users/cover_photos', blank=True, null=True)
+    address = models.CharField(max_length=250, blank=True, null=True)
+    country = models.CharField(max_length=15, blank=True, null=True)
+    state = models.CharField(max_length=15, blank=True, null=True)
+    city = models.CharField(max_length=15, blank=True, null=True)
+    pin_code = models.CharField(max_length=6, blank=True, null=True)
+    latitude = models.CharField(max_length=20, blank=True, null=True)
+    longitude = models.CharField(max_length=20, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
 
-
-
-
-
-
+    def __str__(self):
+        return self.user.email
